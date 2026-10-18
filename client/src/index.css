@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#F8FAFC] text-[#111827] font-sans antialiased min-h-screen selection:bg-[#6D5EF7] selection:text-white;
+  }
+}
+
+/* Custom glassmorphism and subtle gradients */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.gradient-hero-glow {
+  background: radial-gradient(circle at 50% 20%, rgba(109, 94, 247, 0.12) 0%, rgba(20, 184, 166, 0.05) 50%, transparent 80%);
+}
+
+.gradient-brand-text {
+  background: linear-gradient(135deg, #111827 0%, #6D5EF7 60%, #14B8A6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* A4 Print layout styling for Resumes */
+@media print {
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .resume-a4-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* A4 Resume preview canvas simulation */
+.resume-a4-sheet {
+  width: 210mm;
+  min-height: 297mm;
+  box-sizing: border-box;
+}
