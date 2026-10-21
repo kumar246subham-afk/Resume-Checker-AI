@@ -34,12 +34,17 @@ A complete, modern, premium, responsive, AI-powered web application that allows 
    - Complete Accept, Edit, and Reject control.
    - Recalculates projected ATS score improvements based on approved changes.
 
-5. **5 Engineered Resume Templates**
+5. **10 Engineered Resume Templates**
    - **ATS Classic**: Single-column layout engineered for maximum parsing compatibility across legacy and modern ATS systems (Workday, Greenhouse, Lever).
-   - **Modern Professional**: Contemporary aesthetic with subtle violet accents and competency badges.
-   - **Minimal Elegant**: Refined typography with generous whitespace for design and product roles.
+   - **Modern Professional**: Contemporary aesthetic with signature violet accents, structured skill badges, and clear visual hierarchy.
+   - **Minimal Elegant**: Refined typography with generous breathing room and delicate hairline rules for design, editorial, and product roles.
    - **Technical Resume**: Monospace accents, tech-stack header box, and systems focus for developers and DevOps engineers.
    - **Executive Profile**: Structured for senior leaders with executive statement callouts and strategic milestones.
+   - **Executive Elite**: Dual-column executive format with gold/navy accents, executive core competencies, and career highlight callouts.
+   - **Tech Innovator**: Cyber/dark-mode styling, terminal-style skill tags, and GitHub project metrics for senior engineers and architects.
+   - **Creative Portfolio**: Modern aesthetic featuring an asymmetric profile header, portfolio grid, and visual design showcase.
+   - **Data Science Pro**: Quantitative metrics-first layout featuring statistical modeling callouts, tool tags, and research publication links.
+   - **Fresh Graduate Pro**: Education, coursework, and internship-first format optimized for university graduates and career changers.
 
 6. **AI Career Assistant**
    - Interactive chat assistant with context awareness of your active resume.
@@ -165,6 +170,10 @@ npm run build:client
 ```
 
 The optimized static assets will be output to `client/dist`.
+
+## 🚀 Production Deployment
+
+Comprehensive instructions for deploying this full-stack application to **Render** (backend API), **Vercel** (frontend SPA), and **MongoDB Atlas** (database) on free tiers can be found in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 

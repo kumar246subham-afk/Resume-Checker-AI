@@ -92,28 +92,28 @@ export const CareerAssistantPage = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto flex flex-col h-[calc(100vh-140px)]">
       {/* Header & Resume Context Selector */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-subtle flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div className="bg-[#141E33] rounded-2xl p-4 border border-[rgba(166,184,225,0.16)] shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className="text-xl font-extrabold text-[#111827] flex items-center gap-2">
-            <Bot className="w-5 h-5 text-[#6D5EF7]" />
+          <h1 className="text-xl font-extrabold text-[#F4F6FF] flex items-center gap-2">
+            <Bot className="w-5 h-5 text-[#35D9E8]" />
             AI Career Assistant
           </h1>
-          <p className="text-[11px] text-[#64748B]">
+          <p className="text-xs sm:text-[13px] text-[#B5C0D6] mt-0.5">
             Interactive career coaching, interview readiness, and resume phrasing advice.
           </p>
         </div>
 
         {resumes.length > 0 && (
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-500 font-medium">Context Resume:</span>
+            <span className="text-[#8D9AB5] font-medium">Context Resume:</span>
             <select
               value={selectedResumeId}
               onChange={(e) => setSelectedResumeId(e.target.value)}
-              className="px-2.5 py-1.5 border border-slate-200 rounded-lg bg-slate-50 font-semibold text-slate-800 text-xs focus:outline-none focus:border-[#6D5EF7]"
+              className="px-3 py-1.5 border border-[rgba(166,184,225,0.18)] rounded-xl bg-[#101A2D] font-semibold text-[#F4F6FF] text-xs focus:outline-none focus:border-[#7865FF] transition"
             >
-              <option value="">No Context (General Advice)</option>
+              <option value="" className="bg-[#101A2D] text-[#F4F6FF]">No Context (General Advice)</option>
               {resumes.map(r => (
-                <option key={r._id} value={r._id}>
+                <option key={r._id} value={r._id} className="bg-[#101A2D] text-[#F4F6FF]">
                   {r.title} ({r.jobTarget})
                 </option>
               ))}
@@ -123,34 +123,34 @@ export const CareerAssistantPage = () => {
       </div>
 
       {/* Chat Messages Container */}
-      <div className="flex-1 bg-white rounded-2xl border border-slate-200/80 shadow-subtle p-4 sm:p-6 overflow-y-auto space-y-4">
+      <div className="flex-1 bg-[#141E33] rounded-2xl border border-[rgba(166,184,225,0.16)] shadow-sm p-4 sm:p-6 overflow-y-auto space-y-4">
         {messages.map((msg, idx) => (
           <div
             key={idx}
             className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
           >
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${
               msg.role === 'user' 
-                ? 'bg-[#111827] text-white' 
-                : 'bg-violet-100 text-[#6D5EF7]'
+                ? 'bg-gradient-to-r from-[#7865FF] to-[#4285FF] text-white shadow-glow-violet' 
+                : 'bg-[#192640] text-[#35D9E8] border border-[#35D9E8]/30'
             }`}>
               {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
             </div>
 
-            <div className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed relative group ${
+            <div className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed relative group shadow-sm ${
               msg.role === 'user'
-                ? 'bg-[#6D5EF7] text-white rounded-tr-none'
-                : 'bg-slate-50 text-slate-800 border border-slate-200/80 rounded-tl-none'
+                ? 'bg-gradient-to-r from-[#7865FF] to-[#4285FF] text-white rounded-tr-none shadow-glow-violet'
+                : 'bg-[#192640] text-[#F4F6FF] border border-[rgba(166,184,225,0.16)] rounded-tl-none'
             }`}>
               <div className="whitespace-pre-wrap">{msg.content}</div>
 
               {msg.role === 'assistant' && (
                 <button
                   onClick={() => copyToClipboard(msg.content, idx)}
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-700 rounded transition"
+                  className="interactive-button absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 p-1.5 text-[#8D9AB5] hover:text-[#F4F6FF] bg-[#101A2D] border border-[rgba(166,184,225,0.16)] rounded-lg transition"
                   title="Copy message"
                 >
-                  {copiedIdx === idx ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedIdx === idx ? <Check className="w-3.5 h-3.5 text-[#32D6A0]" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               )}
             </div>
@@ -158,8 +158,8 @@ export const CareerAssistantPage = () => {
         ))}
 
         {loading && (
-          <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-50 p-3 rounded-2xl w-fit">
-            <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#6D5EF7]" />
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-[#8D9AB5] bg-[#101A2D] border border-[rgba(166,184,225,0.14)] p-3 rounded-2xl w-fit">
+            <RefreshCw className="w-4 h-4 animate-spin text-[#7865FF]" />
             <span>AI Assistant is writing a grounded response...</span>
           </div>
         )}
@@ -173,7 +173,7 @@ export const CareerAssistantPage = () => {
           <button
             key={i}
             onClick={() => handleSendMessage(pill)}
-            className="text-[11px] font-medium text-slate-600 bg-white hover:bg-violet-50 hover:text-[#6D5EF7] border border-slate-200 px-3 py-1.5 rounded-full transition shadow-2xs"
+            className="interactive-pill text-xs font-semibold text-[#B5C0D6] bg-[#141E33] hover:bg-[#192640] hover:text-[#F4F6FF] border border-[rgba(166,184,225,0.16)] hover:border-[#7865FF]/40 px-3.5 py-1.5 rounded-full transition shadow-sm"
           >
             {pill}
           </button>
@@ -186,19 +186,19 @@ export const CareerAssistantPage = () => {
           e.preventDefault();
           handleSendMessage();
         }}
-        className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200/80 shadow-subtle"
+        className="flex items-center gap-2 bg-[#141E33] p-2 rounded-2xl border border-[rgba(166,184,225,0.18)] shadow-glow-violet/10 focus-within:border-[#7865FF] transition"
       >
         <input
           type="text"
           value={inputPrompt}
           onChange={(e) => setInputPrompt(e.target.value)}
           placeholder="Ask anything about resume bullets, interviews, or engineering skills..."
-          className="flex-1 px-4 py-2.5 text-xs text-slate-900 bg-transparent focus:outline-none"
+          className="flex-1 px-4 py-2.5 text-sm text-[#F4F6FF] placeholder-[#8D9AB5] bg-transparent focus:outline-none"
         />
         <button
           type="submit"
           disabled={!inputPrompt.trim() || loading}
-          className="p-2.5 bg-[#6D5EF7] hover:bg-[#5A4BE0] text-white rounded-xl shadow-sm transition disabled:opacity-50"
+          className="interactive-button p-3 bg-gradient-to-r from-[#7865FF] to-[#4285FF] text-white rounded-xl shadow-glow-violet hover:brightness-110 active:scale-95 transition disabled:opacity-50"
         >
           <Send className="w-4 h-4" />
         </button>

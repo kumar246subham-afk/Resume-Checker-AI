@@ -35,26 +35,26 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F5F7FC] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Link to="/" className="inline-flex items-center gap-2 group mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#6D5EF7] to-[#14B8A6] flex items-center justify-center text-white shadow-md shadow-violet-500/20 group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#6C5CE7] to-[#438BFF] flex items-center justify-center text-white shadow-glow-violet group-hover:scale-105 transition-transform">
             <FileCheck2 className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <span className="font-extrabold text-xl tracking-tight text-[#111827]">
-            Resume Checker <span className="text-[#6D5EF7]">AI</span>
+          <span className="font-black text-xl tracking-tight text-[#161B2E]">
+            Resume Checker <span className="text-[#6C5CE7]">AI</span>
           </span>
         </Link>
-        <h2 className="text-2xl font-extrabold text-[#111827]">
+        <h2 className="text-2xl font-black text-[#161B2E] tracking-tight">
           Welcome Back
         </h2>
-        <p className="mt-1 text-xs text-[#64748B]">
+        <p className="mt-1 text-xs text-[#68738A]">
           Sign in to access your resumes, ATS analyses, and career insights
         </p>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-premium sm:rounded-2xl border border-slate-200/80 sm:px-10">
+        <div className="interactive-card bg-white py-8 px-6 shadow-premium sm:rounded-2xl border border-slate-200/80 sm:px-10">
           
           {errorMsg && (
             <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl p-3 flex items-start gap-2">
@@ -78,7 +78,7 @@ export const LoginPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
-                  className="block w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#6D5EF7]"
+                  className="interactive-input block w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-[#6C5CE7]"
                 />
               </div>
             </div>
@@ -88,7 +88,7 @@ export const LoginPage = () => {
                 <label className="block text-xs font-bold text-slate-700">
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-[11px] font-semibold text-[#6D5EF7] hover:underline">
+                <Link to="/forgot-password" className="text-[11px] font-semibold text-[#6C5CE7] hover:text-[#438BFF] hover:underline transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -102,12 +102,12 @@ export const LoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="block w-full pl-9 pr-10 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-[#6D5EF7]"
+                  className="interactive-input block w-full pl-9 pr-10 py-2 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-[#6C5CE7]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -115,21 +115,21 @@ export const LoginPage = () => {
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded text-[#6D5EF7] focus:ring-violet-500 w-3.5 h-3.5 border-slate-300"
+                  className="rounded text-[#6C5CE7] focus:ring-violet-500 w-3.5 h-3.5 border-slate-300"
                 />
-                <span className="text-xs text-slate-600">Remember this device</span>
+                <span className="text-xs text-[#68738A] group-hover:text-[#161B2E] transition-colors">Remember this device</span>
               </label>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#6D5EF7] to-[#5A4BE0] hover:from-[#5A4BE0] hover:to-[#4839C7] shadow-md shadow-violet-500/20 transition-all disabled:opacity-50"
+              className="interactive-button w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#6C5CE7] to-[#438BFF] shadow-glow-violet transition-all disabled:opacity-50"
             >
               {loading ? 'Authenticating...' : 'Sign In'}
               {!loading && <ArrowRight className="w-3.5 h-3.5" />}
@@ -137,9 +137,9 @@ export const LoginPage = () => {
           </form>
 
           <div className="mt-6 pt-5 border-t border-slate-100 text-center">
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-[#68738A]">
               Don't have an account yet?{' '}
-              <Link to="/signup" className="font-bold text-[#6D5EF7] hover:underline">
+              <Link to="/signup" className="font-bold text-[#6C5CE7] hover:underline">
                 Create an account free
               </Link>
             </p>

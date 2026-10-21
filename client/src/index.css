@@ -1,38 +1,347 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-app-bg: #080D1B;
+  --color-sidebar-bg: #0B1120;
+  --color-content-bg: #0E1527;
+  --color-card-bg: #141E33;
+  --color-elevated-bg: #192640;
+  --color-input-bg: #101A2D;
+  --color-primary-violet: #7865FF;
+  --color-violet-hover: #9182FF;
+  --color-electric-blue: #4285FF;
+  --color-cyan-accent: #35D9E8;
+  --color-teal-success: #32D6A0;
+  --color-warning: #FFC56E;
+  --color-error: #FF728A;
+  --color-main-text: #F4F6FF;
+  --color-secondary-text: #B5C0D6;
+  --color-muted-text: #8D9AB5;
+  --color-subtle-border: rgba(166, 184, 225, 0.16);
+
+  --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-hover: 220ms;
+}
+
 @layer base {
   body {
-    @apply bg-[#F8FAFC] text-[#111827] font-sans antialiased min-h-screen selection:bg-[#6D5EF7] selection:text-white;
+    @apply bg-[#080D1B] text-[#F4F6FF] font-sans antialiased min-h-screen selection:bg-[#7865FF] selection:text-white;
+  }
+
+  /* Universal keyboard focus styling */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #0B1120, 0 0 0 4px #7865FF;
   }
 }
 
-/* Custom glassmorphism and subtle gradients */
+/* =========================================================================
+   OPTION A + OPTION C: STUDIO DARK MICRO-INTERACTION UTILITIES
+   Subtle zoom, gentle lift, restrained glow, and smooth motion
+   ========================================================================= */
+
+/* A. Standard & Elevated Studio Cards */
+.studio-card {
+  background-color: #141E33;
+  border: 1px solid rgba(166, 184, 225, 0.16);
+  color: #F4F6FF;
+  transition: transform var(--duration-hover) var(--ease-smooth),
+              box-shadow var(--duration-hover) var(--ease-smooth),
+              border-color var(--duration-hover) var(--ease-smooth),
+              background-color var(--duration-hover) var(--ease-smooth);
+}
+
+.studio-card:hover {
+  transform: translateY(-3px) scale(1.012);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.7), 0 0 18px -4px rgba(120, 101, 255, 0.28);
+  border-color: rgba(120, 101, 255, 0.4);
+}
+
+.studio-card-elevated {
+  background-color: #192640;
+  border: 1px solid rgba(166, 184, 225, 0.18);
+  color: #F4F6FF;
+  transition: transform var(--duration-hover) var(--ease-smooth),
+              box-shadow var(--duration-hover) var(--ease-smooth),
+              border-color var(--duration-hover) var(--ease-smooth);
+}
+
+.studio-card-elevated:hover {
+  transform: translateY(-3px) scale(1.012);
+  box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.75), 0 0 20px -3px rgba(53, 217, 232, 0.22);
+  border-color: rgba(53, 217, 232, 0.4);
+}
+
+/* Backwards compatibility for existing interactive-card */
+.interactive-card {
+  background-color: #141E33;
+  border: 1px solid rgba(166, 184, 225, 0.16);
+  color: #F4F6FF;
+  transition: transform var(--duration-hover) var(--ease-smooth),
+              box-shadow var(--duration-hover) var(--ease-smooth),
+              border-color var(--duration-hover) var(--ease-smooth);
+}
+
+.interactive-card:hover {
+  transform: translateY(-3px) scale(1.012);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.7), 0 0 18px -4px rgba(120, 101, 255, 0.25);
+  border-color: rgba(120, 101, 255, 0.38);
+}
+
+/* B. Studio Action Buttons */
+.studio-btn-primary {
+  background: linear-gradient(135deg, #7865FF 0%, #4285FF 100%);
+  color: #F4F6FF;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px -2px rgba(120, 101, 255, 0.35);
+  transition: transform 180ms var(--ease-smooth),
+              box-shadow 180ms var(--ease-smooth),
+              filter 180ms var(--ease-smooth);
+}
+
+.studio-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1.5px) scale(1.018);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 24px -4px rgba(120, 101, 255, 0.55), 0 0 15px 0 rgba(66, 133, 255, 0.3);
+}
+
+.studio-btn-primary:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.985);
+}
+
+.studio-btn-secondary {
+  background-color: #141E33;
+  border: 1px solid rgba(166, 184, 225, 0.18);
+  color: #F4F6FF;
+  font-weight: 600;
+  transition: transform 180ms var(--ease-smooth),
+              box-shadow 180ms var(--ease-smooth),
+              background-color 180ms var(--ease-smooth),
+              border-color 180ms var(--ease-smooth);
+}
+
+.studio-btn-secondary:hover:not(:disabled) {
+  transform: translateY(-1.5px);
+  background-color: #192640;
+  border-color: rgba(120, 101, 255, 0.4);
+  box-shadow: 0 6px 18px -3px rgba(0, 0, 0, 0.45);
+}
+
+.studio-btn-secondary:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.985);
+}
+
+.studio-btn-cyan {
+  background: linear-gradient(135deg, #35D9E8 0%, #4285FF 100%);
+  color: #080D1B;
+  font-weight: 700;
+  box-shadow: 0 4px 14px -2px rgba(53, 217, 232, 0.35);
+  transition: transform 180ms var(--ease-smooth),
+              box-shadow 180ms var(--ease-smooth),
+              filter 180ms var(--ease-smooth);
+}
+
+.studio-btn-cyan:hover:not(:disabled) {
+  transform: translateY(-1.5px) scale(1.02);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 24px -4px rgba(53, 217, 232, 0.55);
+}
+
+/* Backwards compatibility for interactive-button */
+.interactive-button {
+  transition: transform 180ms var(--ease-smooth),
+              box-shadow 180ms var(--ease-smooth),
+              filter 180ms var(--ease-smooth);
+}
+
+.interactive-button:hover:not(:disabled) {
+  transform: translateY(-1.5px) scale(1.018);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 22px -3px rgba(120, 101, 255, 0.4);
+}
+
+.interactive-button:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.985);
+}
+
+/* C. Studio Dark Form Fields & Inputs */
+.studio-input {
+  background-color: #101A2D;
+  border: 1px solid rgba(166, 184, 225, 0.18);
+  color: #F4F6FF;
+  transition: border-color 180ms ease,
+              box-shadow 180ms ease,
+              background-color 180ms ease;
+}
+
+.studio-input::placeholder {
+  color: #8D9AB5;
+}
+
+.studio-input:hover {
+  border-color: rgba(166, 184, 225, 0.32);
+}
+
+.studio-input:focus {
+  border-color: #7865FF;
+  box-shadow: 0 0 0 3px rgba(120, 101, 255, 0.25);
+  outline: none;
+  background-color: #141E33;
+}
+
+.interactive-input {
+  background-color: #101A2D;
+  border: 1px solid rgba(166, 184, 225, 0.18);
+  color: #F4F6FF;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.interactive-input::placeholder {
+  color: #8D9AB5;
+}
+
+.interactive-input:hover {
+  border-color: rgba(166, 184, 225, 0.32);
+}
+
+.interactive-input:focus {
+  border-color: #7865FF;
+  box-shadow: 0 0 0 3px rgba(120, 101, 255, 0.25);
+  outline: none;
+}
+
+/* D. Table Rows & List Items */
+.interactive-row {
+  transition: transform 180ms var(--ease-smooth),
+              background-color 180ms var(--ease-smooth),
+              border-color 180ms var(--ease-smooth);
+}
+
+.interactive-row:hover {
+  transform: translateX(3px);
+  background-color: #192640;
+}
+
+/* E. Pills, Badges & Filter Tabs */
+.studio-pill {
+  background-color: #101A2D;
+  border: 1px solid rgba(166, 184, 225, 0.16);
+  color: #B5C0D6;
+  transition: transform 180ms var(--ease-smooth),
+              box-shadow 180ms var(--ease-smooth),
+              border-color 180ms var(--ease-smooth),
+              color 180ms var(--ease-smooth);
+}
+
+.studio-pill:hover {
+  transform: translateY(-1px) scale(1.02);
+  color: #F4F6FF;
+  border-color: rgba(120, 101, 255, 0.45);
+  background-color: #141E33;
+  box-shadow: 0 4px 12px -2px rgba(120, 101, 255, 0.25);
+}
+
+.studio-pill:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.interactive-pill {
+  transition: transform 180ms var(--ease-smooth),
+              box-shadow 180ms var(--ease-smooth),
+              background-color 180ms var(--ease-smooth),
+              border-color 180ms var(--ease-smooth);
+}
+
+.interactive-pill:hover {
+  transform: translateY(-1px) scale(1.03);
+}
+
+.interactive-pill:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* F. Drag-and-Drop Upload Zones */
+.interactive-upload-zone {
+  background-color: #101A2D;
+  border: 2px dashed rgba(166, 184, 225, 0.24);
+  color: #F4F6FF;
+  transition: border-color 220ms var(--ease-smooth),
+              background-color 220ms var(--ease-smooth),
+              transform 220ms var(--ease-smooth),
+              box-shadow 220ms var(--ease-smooth);
+}
+
+.interactive-upload-zone:hover {
+  border-color: #7865FF;
+  background-color: #141E33;
+  box-shadow: 0 14px 35px -8px rgba(0, 0, 0, 0.6), 0 0 20px -3px rgba(120, 101, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Custom glassmorphism, studio dark panels, and futuristic ambient gradients */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.studio-dark-card {
+  background: linear-gradient(145deg, #101426 0%, #1A2138 60%, #25234F 100%);
+  border: 1px solid rgba(108, 92, 231, 0.22);
+  color: #FFFFFF;
 }
 
 .gradient-hero-glow {
-  background: radial-gradient(circle at 50% 20%, rgba(109, 94, 247, 0.12) 0%, rgba(20, 184, 166, 0.05) 50%, transparent 80%);
+  background: radial-gradient(circle at 50% 12%, rgba(108, 92, 231, 0.16) 0%, rgba(50, 214, 211, 0.08) 35%, rgba(67, 139, 255, 0.03) 60%, transparent 80%);
+}
+
+.gradient-ai-mesh {
+  background: 
+    radial-gradient(at 0% 0%, rgba(108, 92, 231, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(50, 214, 211, 0.1) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(67, 139, 255, 0.05) 0px, transparent 65%);
 }
 
 .gradient-brand-text {
-  background: linear-gradient(135deg, #111827 0%, #6D5EF7 60%, #14B8A6 100%);
+  background: linear-gradient(135deg, #101426 0%, #6C5CE7 55%, #32D6D3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
+.gradient-electric-text {
+  background: linear-gradient(135deg, #6C5CE7 0%, #438BFF 50%, #32D6D3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.editorial-tag {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
 /* A4 Print layout styling for Resumes */
 @media print {
-  body {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  html, body {
     background: white !important;
     padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
   }
   .no-print {
     display: none !important;
@@ -40,13 +349,21 @@
   .print-only {
     display: block !important;
   }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
   .resume-a4-sheet {
     box-shadow: none !important;
     border: none !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 auto !important;
     padding: 0 !important;
+    transform: none !important;
+    page-break-after: auto;
   }
 }
 
@@ -55,4 +372,15 @@
   width: 210mm;
   min-height: 297mm;
   box-sizing: border-box;
+}
+
+/* Accessibility: Respect Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+  }
 }

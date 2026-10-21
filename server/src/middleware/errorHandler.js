@@ -2,7 +2,8 @@ const errorHandler = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
-  console.error(`[Error Handler] ${err.stack || err.message}`);
+  // Log error message safely without logging any document contents
+  console.error(`[Error Handler] ${err.name || 'Error'}: ${err.message}`);
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
@@ -25,9 +26,26 @@ const errorHandler = (err, req, res, next) => {
 
   // Multer file upload errors
   if (err.code === 'LIMIT_FILE_SIZE') {
+    const maxMb = process.env.MAX_UPLOAD_SIZE_MB || '10';
     return res.status(400).json({
       success: false,
-      message: 'File size exceeds 10MB limit. Please upload a smaller document.'
+      message: `File size exceeds the ${maxMb}MB limit. Please upload a smaller document.`
+    });
+  }
+
+  // Document parsing, unsupported format, password protection, or corruption errors
+  const lowerMsg = (err.message || '').toLowerCase();
+  if (
+    lowerMsg.includes('unsupported document format') ||
+    lowerMsg.includes('password-protected') ||
+    lowerMsg.includes('corrupted') ||
+    lowerMsg.includes('unable to extract readable text') ||
+    lowerMsg.includes('ocr was unable') ||
+    lowerMsg.includes('insufficient content')
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
     });
   }
 

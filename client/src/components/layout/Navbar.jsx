@@ -29,26 +29,41 @@ export const Navbar = () => {
           
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#6D5EF7] to-[#14B8A6] flex items-center justify-center text-white shadow-md shadow-violet-500/20 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#6C5CE7] via-[#438BFF] to-[#32D6D3] flex items-center justify-center text-white shadow-md shadow-violet-500/25 group-hover:scale-105 group-hover:shadow-glow-violet transition-all duration-300">
               <FileCheck2 className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-lg tracking-tight text-[#111827] flex items-center gap-1.5">
-                Resume Checker <span className="text-[#6D5EF7] text-xs font-bold px-1.5 py-0.5 rounded bg-violet-50 border border-violet-100">AI</span>
+              <span className="font-extrabold text-lg tracking-tight text-[#161B2E] flex items-center gap-1.5">
+                Resume Checker <span className="text-[#6C5CE7] text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-violet-50 border border-violet-200/60 shadow-2xs">AI</span>
               </span>
-              <span className="text-[10px] font-medium text-[#64748B] -mt-1 hidden sm:block">
-                Build Smarter. Apply Better.
+              <span className="text-[10px] font-semibold text-[#68738A] tracking-wide uppercase -mt-0.5 hidden sm:block">
+                Build Smarter • Apply Better
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-[#64748B]">
-            <a href="/#features" className="hover:text-[#6D5EF7] transition">Features</a>
-            <a href="/#how-it-works" className="hover:text-[#6D5EF7] transition">How It Works</a>
-            <a href="/#templates" className="hover:text-[#6D5EF7] transition">Templates</a>
-            <a href="/#pricing" className="hover:text-[#6D5EF7] transition">Pricing</a>
-            <a href="/#faq" className="hover:text-[#6D5EF7] transition">FAQ</a>
+          <nav className="hidden md:flex items-center gap-7 text-xs font-semibold text-[#68738A]">
+            <a href="/#features" className="hover:text-[#6C5CE7] hover:-translate-y-0.5 transition-all duration-200 relative group py-1">
+              Features
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#6C5CE7] to-[#32D6D3] transition-all duration-300 group-hover:w-full rounded-full"></span>
+            </a>
+            <a href="/#how-it-works" className="hover:text-[#6C5CE7] hover:-translate-y-0.5 transition-all duration-200 relative group py-1">
+              How It Works
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#6C5CE7] to-[#32D6D3] transition-all duration-300 group-hover:w-full rounded-full"></span>
+            </a>
+            <a href="/#templates" className="hover:text-[#6C5CE7] hover:-translate-y-0.5 transition-all duration-200 relative group py-1">
+              Templates
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#6C5CE7] to-[#32D6D3] transition-all duration-300 group-hover:w-full rounded-full"></span>
+            </a>
+            <a href="/#pricing" className="hover:text-[#6C5CE7] hover:-translate-y-0.5 transition-all duration-200 relative group py-1">
+              Pricing
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#6C5CE7] to-[#32D6D3] transition-all duration-300 group-hover:w-full rounded-full"></span>
+            </a>
+            <a href="/#faq" className="hover:text-[#6C5CE7] hover:-translate-y-0.5 transition-all duration-200 relative group py-1">
+              FAQ
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#6C5CE7] to-[#32D6D3] transition-all duration-300 group-hover:w-full rounded-full"></span>
+            </a>
           </nav>
 
           {/* Right Action buttons */}
@@ -57,58 +72,68 @@ export const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-slate-200 hover:border-violet-300 hover:bg-slate-50 transition"
+                  className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white hover:border-violet-300 hover:bg-slate-50 shadow-sm transition-all duration-200 hover:-translate-y-0.5"
+                  aria-expanded={userDropdownOpen}
                 >
-                  <div className="w-7 h-7 rounded-full bg-violet-100 text-[#6D5EF7] flex items-center justify-center font-bold text-xs">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#6D5EF7] to-[#8B7CFF] text-white flex items-center justify-center font-bold text-xs shadow-sm">
                     {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                   </div>
-                  <span className="text-xs font-semibold text-[#111827] max-w-[120px] truncate">
-                    {user?.name}
+                  <span className="text-xs font-semibold text-slate-800 max-w-[120px] truncate">
+                    {user?.name || 'My Account'}
                   </span>
                 </button>
 
                 {/* Dropdown Menu */}
                 {userDropdownOpen && (
                   <div 
-                    className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-50 animate-scale-up"
+                    className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-100 py-2 z-50 animate-scale-up"
                     onMouseLeave={() => setUserDropdownOpen(false)}
                   >
-                    <div className="px-4 py-2 border-b border-slate-100">
-                      <p className="text-xs font-bold text-[#111827]">{user?.name}</p>
-                      <p className="text-[11px] text-[#64748B] truncate">{user?.email}</p>
+                    <div className="px-4 py-2.5 border-b border-slate-100 mb-1">
+                      <p className="text-xs font-bold text-slate-900 truncate">{user?.name}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
                     </div>
 
                     <Link 
                       to="/dashboard" 
                       onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-violet-50 hover:text-[#6D5EF7]"
+                      className="interactive-row flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-violet-50/80 hover:text-[#6D5EF7]"
                     >
-                      <LayoutDashboard className="w-4 h-4" />
+                      <LayoutDashboard className="w-4 h-4 text-[#6D5EF7]" />
                       Dashboard
                     </Link>
 
                     <Link 
                       to="/dashboard/resumes" 
                       onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-violet-50 hover:text-[#6D5EF7]"
+                      className="interactive-row flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-violet-50/80 hover:text-[#6D5EF7]"
                     >
-                      <FileText className="w-4 h-4" />
+                      <FileText className="w-4 h-4 text-emerald-600" />
                       My Resumes
+                    </Link>
+
+                    <Link 
+                      to="/dashboard/templates" 
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="interactive-row flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-violet-50/80 hover:text-[#6D5EF7]"
+                    >
+                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      Resume Templates
                     </Link>
 
                     <Link 
                       to="/dashboard/settings" 
                       onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-violet-50 hover:text-[#6D5EF7]"
+                      className="interactive-row flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-violet-50/80 hover:text-[#6D5EF7]"
                     >
-                      <Settings className="w-4 h-4" />
+                      <Settings className="w-4 h-4 text-slate-500" />
                       Account Settings
                     </Link>
 
-                    <div className="border-t border-slate-100 mt-1 pt-1">
+                    <div className="border-t border-slate-100 mt-1.5 pt-1.5">
                       <button
                         onClick={logout}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 text-left"
+                        className="interactive-row w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 text-left"
                       >
                         <LogOut className="w-4 h-4" />
                         Sign Out
@@ -121,13 +146,13 @@ export const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-xs font-semibold text-[#111827] hover:text-[#6D5EF7] transition"
+                  className="px-4 py-2 text-xs font-semibold text-[#161B2E] hover:text-[#6C5CE7] hover:-translate-y-0.5 transition-all duration-200"
                 >
                   Log In
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#6D5EF7] to-[#5A4BE0] hover:from-[#5A4BE0] hover:to-[#4839C7] rounded-lg shadow-sm shadow-violet-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="interactive-button px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#6C5CE7] via-[#438BFF] to-[#32D6D3] hover:opacity-95 rounded-xl shadow-md shadow-violet-500/25 flex items-center gap-1.5"
                 >
                   Get Started Free
                 </Link>
@@ -139,7 +164,8 @@ export const Navbar = () => {
           <div className="flex md:hidden items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-600 hover:text-black hover:bg-slate-100"
+              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>

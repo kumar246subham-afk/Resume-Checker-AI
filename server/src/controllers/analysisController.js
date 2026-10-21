@@ -80,68 +80,125 @@ const serializeResumeToText = (resume) => {
   return lines.join('\n');
 };
 
-// @desc    Upload file & perform ATS Analysis
+// @desc    Upload file & perform ATS Analysis (Universal endpoint for dashboard and landing page)
 // @route   POST /api/analysis/upload
 exports.uploadAndAnalyze = async (req, res, next) => {
+  let extractedText = '';
+  let originalName = 'Uploaded Document';
+  let extractionMeta = {
+    method: 'direct-text',
+    numPages: 1,
+    isScanned: false,
+    ocrConfidence: null
+  };
+
   try {
-    const { targetJobTitle, jobDescription } = req.body;
-    let extractedText = '';
-    let originalName = 'Uploaded Document';
+    const { targetJobTitle, jobDescription, careerMode, fresherTrack } = req.body;
 
     if (req.file) {
       originalName = req.file.originalname;
-      const parsed = await DocumentParserService.extractText(req.file);
-      extractedText = parsed.text;
+      const parseResult = await DocumentParserService.extractText(req.file);
+      extractedText = parseResult.text;
+      extractionMeta = {
+        method: parseResult.method,
+        numPages: parseResult.numPages,
+        isScanned: parseResult.isScanned,
+        ocrConfidence: parseResult.ocrConfidence || null
+      };
     } else if (req.body.resumeText) {
       extractedText = req.body.resumeText;
       originalName = req.body.resumeTitle || 'Pasted Resume Text';
     } else {
       return res.status(400).json({
         success: false,
-        message: 'Please upload a PDF/DOCX file or provide resume text'
+        message: 'Please upload a PDF, DOCX, PNG, or JPEG file, or paste your resume text.'
       });
     }
 
-    if (!extractedText || extractedText.trim().length < 30) {
+    const alphaCount = (extractedText.match(/[a-zA-Z0-9]/g) || []).length;
+    if (!extractedText || alphaCount < 15) {
       return res.status(400).json({
         success: false,
-        message: 'The uploaded document contains insufficient text or appears to be an unreadable scanned image.'
+        message: 'No readable text could be recognized in the document. Please verify that the file is not blank, corrupted, or an illegible image.'
       });
     }
 
-    // Run transparent ATS scoring
+    // Run transparent ATS scoring engine
     const evalResult = ATSScoringService.evaluate(extractedText, {
       targetJobTitle: targetJobTitle || 'General Assessment',
-      jobDescription: jobDescription || ''
-    });
-
-    const analysis = await Analysis.create({
-      ownerId: req.user.id,
-      resumeTitle: originalName,
-      targetJobTitle: targetJobTitle || 'General Assessment',
       jobDescription: jobDescription || '',
-      extractedText: extractedText.slice(0, 10000), // Safe cap
-      scores: evalResult.scores,
-      issues: evalResult.issues,
-      matchedKeywords: evalResult.matchedKeywords,
-      missingKeywords: evalResult.missingKeywords,
-      weakBullets: evalResult.weakBullets,
-      strengths: evalResult.strengths,
-      summary: evalResult.summary,
-      hasJobDescription: evalResult.hasJobDescription
+      careerMode: careerMode || 'standard',
+      fresherTrack: fresherTrack || null,
+      method: extractionMeta.method,
+      isScanned: extractionMeta.isScanned
     });
 
-    // Increment user usage counter
-    await User.findByIdAndUpdate(req.user.id, {
-      $inc: { 'subscription.analysesUsed': 1 }
-    });
+    console.log(`[Analysis] Successfully evaluated document "${originalName}" using ${extractionMeta.method} (Score: ${evalResult.scores.overall}/100)`);
 
-    res.status(201).json({
+    // Privacy-preserving response: If user is logged in, save report (omitting raw extracted text)
+    if (req.user && req.user.id) {
+      const analysis = await Analysis.create({
+        ownerId: req.user.id,
+        resumeTitle: originalName,
+        targetJobTitle: targetJobTitle || 'General Assessment',
+        jobDescription: jobDescription || '',
+        // PRIVACY: extractedText is intentionally omitted from permanent storage
+        scores: evalResult.scores,
+        issues: evalResult.issues,
+        matchedKeywords: evalResult.matchedKeywords,
+        missingKeywords: evalResult.missingKeywords,
+        weakBullets: evalResult.weakBullets,
+        strengths: evalResult.strengths,
+        summary: evalResult.summary,
+        contactDetection: evalResult.contactDetection,
+        detectedCareerLevel: evalResult.detectedCareerLevel,
+        extractionMetadata: extractionMeta,
+        hasJobDescription: evalResult.hasJobDescription,
+        disclaimer: evalResult.disclaimer
+      });
+
+      // Increment user usage counter
+      await User.findByIdAndUpdate(req.user.id, {
+        $inc: { 'subscription.analysesUsed': 1 }
+      });
+
+      return res.status(201).json({
+        success: true,
+        data: analysis
+      });
+    }
+
+    // Guest mode (e.g. from Landing Page upload): Return analysis directly without DB storage
+    return res.status(200).json({
       success: true,
-      data: analysis
+      data: {
+        _id: 'guest-' + Date.now(),
+        resumeTitle: originalName,
+        targetJobTitle: targetJobTitle || 'General Assessment',
+        jobDescription: jobDescription || '',
+        scores: evalResult.scores,
+        issues: evalResult.issues,
+        matchedKeywords: evalResult.matchedKeywords,
+        missingKeywords: evalResult.missingKeywords,
+        weakBullets: evalResult.weakBullets,
+        strengths: evalResult.strengths,
+        summary: evalResult.summary,
+        contactDetection: evalResult.contactDetection,
+        detectedCareerLevel: evalResult.detectedCareerLevel,
+        extractionMetadata: extractionMeta,
+        hasJobDescription: evalResult.hasJobDescription,
+        disclaimer: evalResult.disclaimer,
+        createdAt: new Date().toISOString(),
+        isGuest: true
+      }
     });
   } catch (err) {
     next(err);
+  } finally {
+    // Memory cleanup: Release uploaded buffer immediately
+    if (req.file) {
+      req.file.buffer = null;
+    }
   }
 };
 
@@ -172,7 +229,6 @@ exports.analyzeExistingResume = async (req, res, next) => {
       resumeTitle: resume.title,
       targetJobTitle: targetJobTitle || resume.jobTarget,
       jobDescription: jobDescription || '',
-      extractedText: serializedText.slice(0, 10000),
       scores: evalResult.scores,
       issues: evalResult.issues,
       matchedKeywords: evalResult.matchedKeywords,
@@ -180,7 +236,11 @@ exports.analyzeExistingResume = async (req, res, next) => {
       weakBullets: evalResult.weakBullets,
       strengths: evalResult.strengths,
       summary: evalResult.summary,
-      hasJobDescription: evalResult.hasJobDescription
+      contactDetection: evalResult.contactDetection,
+      detectedCareerLevel: evalResult.detectedCareerLevel,
+      extractionMetadata: { method: 'saved-structured-resume', numPages: 1, isScanned: false },
+      hasJobDescription: evalResult.hasJobDescription,
+      disclaimer: evalResult.disclaimer
     });
 
     await User.findByIdAndUpdate(req.user.id, {
@@ -223,7 +283,6 @@ exports.getAnalysisById = async (req, res, next) => {
 exports.getUserAnalyses = async (req, res, next) => {
   try {
     const analyses = await Analysis.find({ ownerId: req.user.id })
-      .select('-extractedText')
       .sort({ createdAt: -1 })
       .limit(20);
 
@@ -255,7 +314,6 @@ exports.improveBulletOrSummary = async (req, res, next) => {
       return res.status(200).json({ success: true, data: result });
     }
 
-    // Default: improve bullet
     const result = await AIService.improveBullet(text, context || {});
     res.status(200).json({
       success: true,

@@ -1,21 +1,67 @@
 const JobMatch = require('../models/JobMatch');
 const Resume = require('../models/Resume');
 
+const SKILL_RELEVANCE_MAP = {
+  'javascript': 'Core web programming language required for dynamic UI interaction and full-stack runtime.',
+  'typescript': 'Static typing that prevents runtime exceptions and is standard across modern engineering teams.',
+  'python': 'Fundamental for data modeling, backend web frameworks (Django/FastAPI), and AI/ML algorithms.',
+  'java': 'Enterprise-grade object-oriented foundation for backend microservices and distributed architectures.',
+  'c++': 'High-performance systems programming language critical for real-time computing and low latency.',
+  'c#': 'Primary language for .NET enterprise stacks, cloud APIs, and game development.',
+  'golang': 'High-concurrency language preferred for cloud-native infrastructure and containerized networking.',
+  'rust': 'Memory-safe systems programming language prioritized for ultra-high security and performance.',
+  'react': 'Leading declarative frontend component architecture used in high-scale web platforms.',
+  'react native': 'Cross-platform mobile framework delivering native iOS and Android experiences.',
+  'angular': 'Comprehensive opinionated enterprise framework for large-scale enterprise single-page applications.',
+  'vue': 'Progressive lightweight reactive UI framework known for clean component isolation.',
+  'next.js': 'Industry standard framework for React server-side rendering, SEO, and static web performance.',
+  'node.js': 'High-concurrency asynchronous runtime executing JavaScript outside the browser.',
+  'express': 'Minimalist, fast web framework powering REST APIs and routing in the Node.js ecosystem.',
+  'django': 'Robust Python web framework with built-in ORM, security, and administrative scaffolding.',
+  'flask': 'Lightweight Python micro-framework ideal for microservices and AI model inference APIs.',
+  'fastapi': 'Modern Python framework delivering automatic OpenAPI schema validation and high throughput.',
+  'spring boot': 'Industry standard enterprise Java framework for transactional microservice architectures.',
+  'html5': 'Structural foundation of web standards ensuring accessibility and semantic parsing.',
+  'css3': 'Styling standard ensuring responsive cross-device fluid typography and UI adaptability.',
+  'tailwind css': 'Utility-first styling system accelerating production frontend delivery and design tokens.',
+  'aws': 'Leading global cloud platform encompassing compute (EC2/Lambda), storage (S3), and networking.',
+  'azure': 'Microsoft cloud platform deeply integrated with enterprise identity (Entra) and services.',
+  'gcp': 'Google cloud platform recognized for cutting-edge data analytics, BigQuery, and AI infrastructure.',
+  'docker': 'Standard containerization technology guaranteeing that apps run identically in every environment.',
+  'kubernetes': 'Orchestration standard managing automated scaling, self-healing, and multi-node clusters.',
+  'terraform': 'Infrastructure-as-Code tooling allowing reproducible multi-cloud provisioning.',
+  'ci/cd': 'Continuous integration and continuous delivery pipelines automating test suites and production rollouts.',
+  'git': 'Distributed version control essential for branch management, code review, and engineering collaboration.',
+  'sql': 'Standard declarative relational database query language for transactional reporting and joins.',
+  'postgresql': 'Advanced open-source relational database renowned for extensible features and JSONB support.',
+  'mysql': 'Ubiquitous relational database powering web applications and scalable read-replicas.',
+  'mongodb': 'Flexible JSON-like document database suited for agile schema evolution and rapid iteration.',
+  'redis': 'In-memory data store leveraged for sub-millisecond caching, rate-limiting, and pub/sub queues.',
+  'graphql': 'API query language allowing clients to request exact data structures, minimizing over-fetching.',
+  'rest api': 'Standard architectural interface pattern facilitating seamless service-to-service communication.',
+  'microservices': 'Distributed architectural paradigm isolating domain bounded contexts for decoupled scaling.',
+  'agile': 'Iterative project management framework optimizing sprint delivery and stakeholder responsiveness.',
+  'scrum': 'Structured sprint cadences and ceremonies that drive cross-functional engineering velocity.',
+  'jira': 'Standard issue and backlog tracking platform aligning engineering roadmaps with business goals.',
+  'system design': 'Architectural discipline encompassing caching, sharding, replication, and fault tolerance.',
+  'distributed systems': 'Engineering paradigm addressing concurrency, eventual consistency, and network partitions.',
+  'unit testing': 'Automated test discipline ensuring individual functions execute deterministically.',
+  'jest': 'Delightful JavaScript test framework for unit and component snapshot assertions.',
+  'cypress': 'Modern end-to-end browser test runner verifying real user workflows in staging/production.',
+  'machine learning': 'Statistical algorithmic discipline training predictive models from structured and unstructured data.',
+  'data science': 'Multidisciplinary domain converting raw data into statistical insight and strategic value.',
+  'tableau': 'Visual data analytics platform transforming complex SQL data into interactive executive dashboards.',
+  'communication': 'Interpersonal skill crucial for explaining complex technical decisions to stakeholders.',
+  'leadership': 'Ability to mentor junior engineers, unblock peers, and drive architectural consensus.',
+  'cross-functional': 'Track record of collaborating effectively across product, design, QA, and business teams.',
+  'problem solving': 'Core engineering competency in diagnosing root causes and implementing resilient solutions.'
+};
+
 // Helper to extract keywords from JD
 const parseJobRequirements = (jdText) => {
   const text = (jdText || '').toLowerCase();
   
-  // High-frequency technical and domain skills
-  const KNOWN_SKILLS = [
-    'javascript', 'typescript', 'python', 'java', 'c++', 'c#', 'golang', 'rust',
-    'react', 'react native', 'angular', 'vue', 'next.js', 'node.js', 'express',
-    'django', 'flask', 'fastapi', 'spring boot', 'html5', 'css3', 'tailwind css',
-    'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'terraform', 'ci/cd', 'git',
-    'sql', 'postgresql', 'mysql', 'mongodb', 'redis', 'graphql', 'rest api',
-    'microservices', 'agile', 'scrum', 'jira', 'system design', 'distributed systems',
-    'unit testing', 'jest', 'cypress', 'machine learning', 'data science', 'tableau',
-    'communication', 'leadership', 'cross-functional', 'problem solving'
-  ];
+  const KNOWN_SKILLS = Object.keys(SKILL_RELEVANCE_MAP);
 
   const matched = [];
   KNOWN_SKILLS.forEach(skill => {
@@ -25,6 +71,11 @@ const parseJobRequirements = (jdText) => {
   });
 
   return matched;
+};
+
+// Helper to get relevance explanation
+const getSkillExplanation = (skill) => {
+  return SKILL_RELEVANCE_MAP[skill.toLowerCase()] || `Relevant qualification and keyword requirement identified in job description for ${skill}.`;
 };
 
 // @desc    Match resume against job description
@@ -43,7 +94,7 @@ exports.createJobMatch = async (req, res, next) => {
     let candidateText = (resumeText || '').toLowerCase();
     let resumeTitle = 'Direct Input';
 
-    if (resumeId) {
+    if (resumeId && req.user) {
       const resume = await Resume.findOne({ _id: resumeId, ownerId: req.user.id });
       if (resume) {
         resumeTitle = resume.title;
@@ -81,6 +132,12 @@ exports.createJobMatch = async (req, res, next) => {
       educationMatch: 88
     };
 
+    // Build skill explanations
+    const skillExplanations = {};
+    [...matchedSkills, ...missingSkills].forEach(s => {
+      skillExplanations[s] = getSkillExplanation(s);
+    });
+
     // Actionable tips
     const actionableTips = [
       missingRequired.length > 0
@@ -95,8 +152,7 @@ exports.createJobMatch = async (req, res, next) => {
       'Emphasize collaborative workflows, testing, and cloud deployment pipelines in your project descriptions.'
     ];
 
-    const jobMatch = await JobMatch.create({
-      ownerId: req.user.id,
+    const matchPayload = {
       resumeId: resumeId || null,
       resumeTitle,
       jobTitle,
@@ -106,14 +162,115 @@ exports.createJobMatch = async (req, res, next) => {
       matchedSkills,
       missingRequiredSkills: missingRequired,
       missingPreferredSkills: missingPreferred,
+      skillExplanations,
       experienceSummary: `Your resume matches ${matchedSkills.length} out of ${jdSkills.length} core technical requirements identified in this job posting.`,
       projectRecommendations,
       actionableTips
+    };
+
+    // Only persist if user is authenticated and explicitly requested
+    if (req.user && req.user.id) {
+      const jobMatch = await JobMatch.create({
+        ownerId: req.user.id,
+        ...matchPayload
+      });
+      return res.status(201).json({
+        success: true,
+        data: jobMatch
+      });
+    }
+
+    // Guest / non-persisted response
+    res.status(200).json({
+      success: true,
+      data: {
+        _id: `temp-${Date.now()}`,
+        ...matchPayload,
+        isGuest: true
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Compare resume against two job descriptions side-by-side without permanently storing
+// @route   POST /api/job-matches/compare
+exports.compareJobDescriptions = async (req, res, next) => {
+  try {
+    const { resumeId, resumeText, jobA, jobB } = req.body;
+
+    if (!jobA?.description || !jobB?.description) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide two job descriptions (Job A and Job B) to compare.'
+      });
+    }
+
+    let candidateText = (resumeText || '').toLowerCase();
+    let resumeTitle = 'Direct Text Comparison';
+
+    if (resumeId && req.user) {
+      const resume = await Resume.findOne({ _id: resumeId, ownerId: req.user.id });
+      if (resume) {
+        resumeTitle = resume.title;
+        candidateText += ` ${JSON.stringify(resume.sections)}`.toLowerCase();
+      }
+    }
+
+    // Process Job A
+    const skillsA = parseJobRequirements(jobA.description);
+    const matchedA = skillsA.filter(s => candidateText.includes(s));
+    const missingA = skillsA.filter(s => !candidateText.includes(s));
+    const scoreA = Math.min(98, Math.max(25, Math.round((matchedA.length / (skillsA.length || 1)) * 100)));
+
+    // Process Job B
+    const skillsB = parseJobRequirements(jobB.description);
+    const matchedB = skillsB.filter(s => candidateText.includes(s));
+    const missingB = skillsB.filter(s => !candidateText.includes(s));
+    const scoreB = Math.min(98, Math.max(25, Math.round((matchedB.length / (skillsB.length || 1)) * 100)));
+
+    // Shared & unique skills
+    const setA = new Set(skillsA);
+    const setB = new Set(skillsB);
+    const sharedSkills = skillsA.filter(s => setB.has(s));
+    const uniqueToA = skillsA.filter(s => !setB.has(s));
+    const uniqueToB = skillsB.filter(s => !setA.has(s));
+
+    // Compile skill explanations
+    const allSkills = new Set([...skillsA, ...skillsB]);
+    const explanations = {};
+    allSkills.forEach(s => {
+      explanations[s] = getSkillExplanation(s);
     });
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      data: jobMatch
+      data: {
+        resumeTitle,
+        comparison: {
+          jobA: {
+            title: jobA.title || 'Job Opportunity A',
+            score: scoreA,
+            totalSkills: skillsA.length,
+            matchedSkills: matchedA,
+            missingSkills: missingA,
+            uniqueSkills: uniqueToA
+          },
+          jobB: {
+            title: jobB.title || 'Job Opportunity B',
+            score: scoreB,
+            totalSkills: skillsB.length,
+            matchedSkills: matchedB,
+            missingSkills: missingB,
+            uniqueSkills: uniqueToB
+          },
+          sharedSkills,
+          recommendedTarget: scoreA >= scoreB ? (jobA.title || 'Job Opportunity A') : (jobB.title || 'Job Opportunity B'),
+          scoreDifference: Math.abs(scoreA - scoreB),
+          skillExplanations: explanations
+        }
+      }
     });
   } catch (err) {
     next(err);

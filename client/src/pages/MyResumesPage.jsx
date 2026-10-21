@@ -18,6 +18,7 @@ import {
 export const MyResumesPage = () => {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [resumeToDelete, setResumeToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -86,49 +87,83 @@ export const MyResumesPage = () => {
     }
   };
 
+  const filteredResumes = resumes.filter((r) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      (r.title && r.title.toLowerCase().includes(q)) ||
+      (r.jobTarget && r.jobTarget.toLowerCase().includes(q)) ||
+      (r.templateId && r.templateId.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-[#111827]">My Resumes</h1>
-          <p className="text-xs text-[#64748B] mt-0.5">
-            Manage your tailored versions, run audits, and export PDFs.
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F4F6FF] tracking-tight">
+            My Resumes
+          </h1>
+          <p className="text-[14px] text-[#B5C0D6] mt-1">
+            Manage your tailored resume documents, audit ATS readiness, and export PDF copies.
           </p>
         </div>
 
         <button
           onClick={handleCreateNew}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-[#6D5EF7] hover:bg-[#5A4BE0] shadow-md transition"
+          className="studio-btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-[14px] group"
         >
-          <Plus className="w-4 h-4" />
-          Create New Resume
+          <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
+          <span>Create New Resume</span>
         </button>
       </div>
+
+      {/* Search Bar */}
+      {resumes.length > 0 && (
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search resumes by title, target role, or template..."
+            className="studio-input w-full max-w-md px-4 py-2.5 rounded-xl text-[14px]"
+          />
+        </div>
+      )}
 
       {/* Resumes Grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="bg-white rounded-2xl h-64 border border-slate-200 p-6 space-y-4">
-              <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-              <div className="h-3 bg-slate-100 rounded w-1/2"></div>
-              <div className="h-32 bg-slate-50 rounded"></div>
+            <div key={n} className="studio-card rounded-2xl h-64 p-6 space-y-4">
+              <div className="h-5 bg-[#101A2D] rounded w-3/4 border border-[rgba(166,184,225,0.1)]"></div>
+              <div className="h-3 bg-[#101A2D] rounded w-1/2 border border-[rgba(166,184,225,0.08)]"></div>
+              <div className="h-32 bg-[#101A2D]/80 rounded border border-[rgba(166,184,225,0.08)]"></div>
             </div>
           ))}
         </div>
+      ) : filteredResumes.length === 0 && resumes.length > 0 ? (
+        <div className="studio-card rounded-2xl p-12 text-center space-y-3">
+          <p className="text-[15px] text-[#B5C0D6]">No resumes match your search query "{searchQuery}".</p>
+          <button
+            onClick={() => setSearchQuery('')}
+            className="studio-btn-secondary px-4 py-2 rounded-xl text-[13px]"
+          >
+            Clear Search Filter
+          </button>
+        </div>
       ) : resumes.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 border-2 border-dashed border-slate-200 text-center space-y-4">
-          <div className="w-16 h-16 bg-violet-50 text-[#6D5EF7] rounded-2xl flex items-center justify-center mx-auto">
+        <div className="studio-card rounded-2xl p-12 border-2 border-dashed border-[rgba(166,184,225,0.2)] text-center space-y-4">
+          <div className="w-16 h-16 bg-[#7865FF]/15 text-[#7865FF] rounded-2xl flex items-center justify-center mx-auto border border-[#7865FF]/30">
             <FileText className="w-8 h-8" />
           </div>
-          <h2 className="text-lg font-bold text-[#111827]">No resumes created yet</h2>
-          <p className="text-xs text-[#64748B] max-w-md mx-auto">
-            Start building your resume using one of our 5 verified ATS templates, tailored for your industry.
+          <h2 className="text-xl font-bold text-[#F4F6FF]">No resumes created yet</h2>
+          <p className="text-[14px] text-[#B5C0D6] max-w-md mx-auto">
+            Start building your resume using one of our 10 verified ATS templates, tailored for your industry.
           </p>
           <button
             onClick={handleCreateNew}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-[#6D5EF7] hover:bg-[#5A4BE0] shadow-md transition"
+            className="studio-btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-[14px]"
           >
             <Plus className="w-4 h-4" />
             Build My First Resume
@@ -136,46 +171,46 @@ export const MyResumesPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {resumes.map((resume) => (
+          {filteredResumes.map((resume) => (
             <div
               key={resume._id}
-              className="bg-white rounded-2xl border border-slate-200/80 shadow-subtle hover:shadow-card-hover transition-all flex flex-col justify-between overflow-hidden group"
+              className="studio-card rounded-2xl flex flex-col justify-between overflow-hidden group hover:border-[#7865FF]/50"
             >
-              <div className="p-5 border-b border-slate-100 space-y-2">
+              <div className="p-6 border-b border-[rgba(166,184,225,0.12)] space-y-3">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-bold text-sm text-[#111827] line-clamp-1 group-hover:text-[#6D5EF7] transition">
+                  <h3 className="font-bold text-[17px] text-[#F4F6FF] line-clamp-1 group-hover:text-[#9182FF] transition">
                     {resume.title}
                   </h3>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100 shrink-0">
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#101A2D] text-[#35D9E8] border border-[#35D9E8]/30 shrink-0">
                     {resume.templateId}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-500 line-clamp-1">
-                  Target: <strong className="text-slate-700 font-semibold">{resume.jobTarget || 'General'}</strong>
+                <p className="text-[14px] text-[#B5C0D6] line-clamp-1">
+                  Target: <strong className="text-[#F4F6FF] font-semibold">{resume.jobTarget || 'General'}</strong>
                 </p>
 
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-400 pt-1">
-                  <Calendar className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-2 text-[12px] text-[#8D9AB5] pt-1">
+                  <Calendar className="w-3.5 h-3.5 text-[#35D9E8]" />
                   <span>Updated {new Date(resume.updatedAt).toLocaleDateString()}</span>
                   <span>• v{resume.version || 1}</span>
                 </div>
               </div>
 
               {/* Action buttons footer */}
-              <div className="p-3 bg-slate-50/60 flex items-center justify-between gap-1 text-xs">
-                <div className="flex items-center gap-1">
+              <div className="p-3 bg-[#101A2D]/70 border-t border-[rgba(166,184,225,0.1)] flex items-center justify-between gap-1 text-[13px]">
+                <div className="flex items-center gap-1.5">
                   <Link
                     to={`/dashboard/builder?id=${resume._id}`}
-                    className="p-2 rounded-lg text-slate-700 hover:text-[#6D5EF7] hover:bg-violet-50 transition"
-                    title="Edit Resume"
+                    className="p-2 rounded-xl text-[#F4F6FF] hover:text-white hover:bg-[#7865FF] hover:scale-105 active:scale-95 transition-all duration-180"
+                    title="Edit in Resume Builder"
                   >
                     <Edit3 className="w-4 h-4" />
                   </Link>
 
                   <Link
                     to={`/dashboard/checker?resumeId=${resume._id}`}
-                    className="p-2 rounded-lg text-slate-700 hover:text-teal-600 hover:bg-teal-50 transition"
+                    className="p-2 rounded-xl text-[#35D9E8] hover:text-[#35D9E8] hover:bg-[#35D9E8]/20 hover:scale-105 active:scale-95 transition-all duration-180"
                     title="Audit with ATS Checker"
                   >
                     <FileCheck2 className="w-4 h-4" />
@@ -183,7 +218,7 @@ export const MyResumesPage = () => {
 
                   <Link
                     to={`/dashboard/job-matcher?resumeId=${resume._id}`}
-                    className="p-2 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 transition"
+                    className="p-2 rounded-xl text-[#4285FF] hover:text-white hover:bg-[#4285FF] hover:scale-105 active:scale-95 transition-all duration-180"
                     title="Match to Job Description"
                   >
                     <Briefcase className="w-4 h-4" />
@@ -191,7 +226,7 @@ export const MyResumesPage = () => {
 
                   <button
                     onClick={() => handleDuplicate(resume._id)}
-                    className="p-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-200 transition"
+                    className="p-2 rounded-xl text-[#B5C0D6] hover:text-[#F4F6FF] hover:bg-[#192640] hover:scale-105 active:scale-95 transition-all duration-180"
                     title="Duplicate Resume"
                   >
                     <Copy className="w-4 h-4" />
@@ -200,7 +235,7 @@ export const MyResumesPage = () => {
 
                 <button
                   onClick={() => confirmDelete(resume)}
-                  className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                  className="p-2 rounded-xl text-[#8D9AB5] hover:text-[#FF728A] hover:bg-[#FF728A]/15 hover:scale-105 active:scale-95 transition-all duration-180"
                   title="Delete Resume"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -211,18 +246,18 @@ export const MyResumesPage = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal in Dark Theme */}
       <Modal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         title="Delete Resume"
       >
         <div className="space-y-4">
-          <div className="flex items-start gap-3 bg-rose-50 p-3 rounded-xl border border-rose-200 text-rose-800 text-xs">
-            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 bg-[#FF728A]/10 p-4 rounded-xl border border-[#FF728A]/30 text-[#FF728A] text-[14px]">
+            <AlertCircle className="w-5 h-5 text-[#FF728A] shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">Are you sure you want to delete this resume?</p>
-              <p className="mt-1">
+              <p className="mt-1 leading-relaxed text-[#B5C0D6] text-[13px]">
                 "{resumeToDelete?.title}" will be permanently removed along with its version history. This cannot be undone.
               </p>
             </div>
@@ -231,14 +266,14 @@ export const MyResumesPage = () => {
           <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={() => setDeleteModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200"
+              className="studio-btn-secondary px-4 py-2 rounded-xl text-[14px]"
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition"
+              className="px-4 py-2 rounded-xl text-[14px] font-semibold text-white bg-[#FF728A] hover:bg-[#FF728A]/90 shadow-[0_0_15px_rgba(255,114,138,0.4)] transition"
             >
               {deleting ? 'Deleting...' : 'Delete Permanently'}
             </button>

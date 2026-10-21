@@ -81,5 +81,20 @@ describe('Authentication & Resume API End-to-End Tests', () => {
     const res = await request(app).get('/api/health');
     expect(res.statusCode).toBe(200);
     expect(res.body.status).toBe('healthy');
+    expect(res.body.service).toBe('Resume Checker AI API');
+  });
+
+  test('GET /health - Root health check returns healthy for Render monitoring', async () => {
+    const res = await request(app).get('/health');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.status).toBe('healthy');
+  });
+
+  test('OPTIONS /api/health - Responds to CORS preflight cleanly', async () => {
+    const res = await request(app)
+      .options('/api/health')
+      .set('Origin', 'http://localhost:5173')
+      .set('Access-Control-Request-Method', 'GET');
+    expect(res.statusCode).toBe(204);
   });
 });

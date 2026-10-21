@@ -20,7 +20,7 @@ class AIService {
     return {
       provider: 'Heuristic Engine',
       isLive: false,
-      notice: 'Demo mode active. Add GEMINI_API_KEY or OPENAI_API_KEY in server/.env for live generative models.'
+      notice: 'Demo mode active. Add GEMINI_API_KEY in server/.env for live generative models.'
     };
   }
 
@@ -33,13 +33,13 @@ class AIService {
       return { improved: '', rationale: 'Original bullet is empty' };
     }
 
-    const { provider, isLive } = this.getProviderInfo();
+    const { isLive } = this.getProviderInfo();
 
     if (isLive && process.env.GEMINI_API_KEY) {
       try {
         return await this._callGeminiBulletImprove(original, context);
       } catch (err) {
-        console.warn(`[AI Service] Gemini call failed (${err.message}). Falling back to Heuristic AI.`);
+        console.warn(`[AI Service] Live AI unavailable (${err.message}). Using Heuristic AI fallback.`);
       }
     }
 
@@ -51,14 +51,13 @@ class AIService {
    * Generate or improve a professional resume summary
    */
   static async generateSummary(data = {}) {
-    const { role = 'Software Engineer', experience = '3+ years', skills = [], highlights = [] } = data;
-    const { provider, isLive } = this.getProviderInfo();
+    const { isLive } = this.getProviderInfo();
 
     if (isLive && process.env.GEMINI_API_KEY) {
       try {
         return await this._callGeminiSummary(data);
       } catch (err) {
-        console.warn(`[AI Service] Gemini call failed (${err.message}). Falling back to Heuristic AI.`);
+        console.warn(`[AI Service] Live AI unavailable (${err.message}). Using Heuristic AI fallback.`);
       }
     }
 
@@ -69,13 +68,13 @@ class AIService {
    * AI Career Assistant Chat
    */
   static async chatCareerAssistant(message, context = {}, history = []) {
-    const { provider, isLive } = this.getProviderInfo();
+    const { isLive } = this.getProviderInfo();
 
     if (isLive && process.env.GEMINI_API_KEY) {
       try {
         return await this._callGeminiChat(message, context, history);
       } catch (err) {
-        console.warn(`[AI Service] Gemini chat failed (${err.message}). Falling back to Heuristic AI.`);
+        console.warn(`[AI Service] Live AI unavailable (${err.message}). Using Heuristic AI fallback.`);
       }
     }
 
@@ -88,7 +87,6 @@ class AIService {
   static _heuristicImproveBullet(bullet, context = {}) {
     let cleaned = bullet.replace(/^[•\-\*–\d\.]+\s*/, '').trim();
 
-    // Check if starts with weak verb
     const weakMap = {
       'responsible for': 'Architected and directed',
       'duties included': 'Spearheaded execution of',
@@ -111,26 +109,30 @@ class AIService {
       }
     }
 
-    // If it doesn't have an action verb at the start
     if (improved === cleaned) {
       const verbs = ['Architected', 'Engineered', 'Spearheaded', 'Optimized', 'Streamlined', 'Delivered'];
       const chosen = verbs[Math.floor(Math.random() * verbs.length)];
       improved = `${chosen} ${cleaned.charAt(0).toLowerCase() + cleaned.slice(1)}`;
     }
 
-    // If no metrics exist, suggest an impactful measurable outcome placeholder
+    let hasMissingMetric = false;
+    let missingMetricPrompt = null;
     const hasMetric = /\b\d+%|\$\d+|\b\d+x\b|\b\d+\+?\b/.test(improved);
     if (!hasMetric) {
-      improved += ', boosting team workflow efficiency by 28% and reducing error rates.';
-      rationale += ' Added quantifiable impact metric (please verify specific figures before finalizing).';
+      improved += ' [Insert measurable outcome: e.g. reduced processing time by X% or supported Y+ users]';
+      rationale += ' Converted to active voice and added a metric placeholder. Please replace [Insert measurable outcome] with your factual achievement.';
+      hasMissingMetric = true;
+      missingMetricPrompt = 'What specific percentage, metric, or user count did you achieve in this role?';
     }
 
     return {
       original: bullet,
       improved: improved,
       rationale,
-      provider: 'Heuristic Engine (Demo)',
-      verifiedNotice: 'Remember to verify all metrics against your actual accomplishments.'
+      hasMissingMetric,
+      missingMetricPrompt,
+      provider: 'Heuristic Engine (Grounded)',
+      verifiedNotice: 'Never fabricates accomplishments. All metrics must reflect your genuine personal achievements.'
     };
   }
 
@@ -139,7 +141,6 @@ class AIService {
    */
   static _heuristicGenerateSummary(data) {
     const role = data.role || 'Software Engineer';
-    const experience = data.experienceLevel || 'experienced';
     const skills = Array.isArray(data.skills) && data.skills.length > 0 
       ? data.skills.slice(0, 5).join(', ')
       : 'modern software engineering best practices, distributed systems, and collaborative development';
@@ -200,7 +201,7 @@ class AIService {
   }
 
   /**
-   * Gemini API call for bullet improvement
+   * Gemini API call with 15s timeout
    */
   static async _callGeminiBulletImprove(bullet, context) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -219,33 +220,45 @@ Rules:
 
 Original bullet: "${bullet}"`;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json' }
-      })
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
-    if (!response.ok) {
-      throw new Error(`Gemini API returned status ${response.status}`);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'application/json' }
+        })
+      });
+
+      if (response.status === 429) {
+        throw new Error('AI provider quota or rate limit exceeded');
+      }
+
+      if (!response.ok) {
+        throw new Error(`Gemini API returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const parsed = JSON.parse(textOutput);
+
+      return {
+        original: bullet,
+        improved: parsed.improved || bullet,
+        rationale: parsed.rationale || 'Enhanced with action verbs and quantifiable results.',
+        provider: 'Google Gemini'
+      };
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const data = await response.json();
-    const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    const parsed = JSON.parse(textOutput);
-
-    return {
-      original: bullet,
-      improved: parsed.improved || bullet,
-      rationale: parsed.rationale || 'Enhanced with action verbs and quantifiable results.',
-      provider: 'Google Gemini'
-    };
   }
 
   /**
-   * Gemini API call for summary generation
+   * Gemini API call for summary generation with 15s timeout
    */
   static async _callGeminiSummary(data) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -260,31 +273,43 @@ Rules:
 - Maintain an implied third-person tone (no "I" or "my").
 - Return ONLY valid JSON: {"summary": "..."}`;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json' }
-      })
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
-    if (!response.ok) {
-      throw new Error(`Gemini API returned status ${response.status}`);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'application/json' }
+        })
+      });
+
+      if (response.status === 429) {
+        throw new Error('AI provider quota or rate limit exceeded');
+      }
+
+      if (!response.ok) {
+        throw new Error(`Gemini API returned status ${response.status}`);
+      }
+
+      const resData = await response.json();
+      const textOutput = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const parsed = JSON.parse(textOutput);
+
+      return {
+        summary: parsed.summary,
+        provider: 'Google Gemini'
+      };
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const resData = await response.json();
-    const textOutput = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
-    const parsed = JSON.parse(textOutput);
-
-    return {
-      summary: parsed.summary,
-      provider: 'Google Gemini'
-    };
   }
 
   /**
-   * Gemini API call for Career Assistant Chat
+   * Gemini API call for Career Assistant Chat with 15s timeout
    */
   static async _callGeminiChat(message, context, history) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -298,23 +323,35 @@ Do not fabricate credentials for the user. Protect user privacy.`;
       { role: 'user', parts: [{ text: `${systemPrompt}\n\nContext:\n${JSON.stringify(context)}\n\nUser Question:\n${message}` }] }
     ];
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents })
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
-    if (!response.ok) {
-      throw new Error(`Gemini API returned status ${response.status}`);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({ contents })
+      });
+
+      if (response.status === 429) {
+        throw new Error('AI provider quota or rate limit exceeded');
+      }
+
+      if (!response.ok) {
+        throw new Error(`Gemini API returned status ${response.status}`);
+      }
+
+      const resData = await response.json();
+      const reply = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      return {
+        reply: reply || 'I am ready to help you optimize your resume and career strategy.',
+        provider: 'Google Gemini'
+      };
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const resData = await response.json();
-    const reply = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    return {
-      reply: reply || 'I am ready to help you optimize your resume and career strategy.',
-      provider: 'Google Gemini'
-    };
   }
 }
 

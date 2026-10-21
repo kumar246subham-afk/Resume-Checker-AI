@@ -4,19 +4,18 @@ const {
   createJobMatch,
   getJobMatches,
   getJobMatchById,
-  createTailoredResume
+  createTailoredResume,
+  compareJobDescriptions
 } = require('../controllers/jobMatchController');
-const { protect } = require('../middleware/auth');
+const { protect, optionalProtect } = require('../middleware/auth');
 
-router.use(protect);
+// Public / Guest friendly matching & comparison routes (zero-storage if not authenticated)
+router.post('/compare', optionalProtect, compareJobDescriptions);
+router.post('/', optionalProtect, createJobMatch);
 
-router.route('/')
-  .post(createJobMatch)
-  .get(getJobMatches);
-
-router.route('/:id')
-  .get(getJobMatchById);
-
-router.post('/:id/tailor', createTailoredResume);
+// Protected routes requiring registered user account
+router.get('/', protect, getJobMatches);
+router.get('/:id', protect, getJobMatchById);
+router.post('/:id/tailor', protect, createTailoredResume);
 
 module.exports = router;

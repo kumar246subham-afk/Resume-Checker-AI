@@ -18,8 +18,9 @@ const AnalysisSchema = new mongoose.Schema(
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
-      index: true
+      required: false, // Optional to support guest / landing page analysis
+      index: true,
+      default: null
     },
     resumeId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -38,10 +39,7 @@ const AnalysisSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
-    extractedText: {
-      type: String,
-      default: ''
-    },
+    // PRIVACY: We do NOT store extractedText permanently to protect user privacy
     scores: {
       overall: { type: Number, required: true, min: 0, max: 100 },
       atsReadability: { type: Number, required: true, min: 0, max: 100 },
@@ -65,6 +63,22 @@ const AnalysisSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
+    contactDetection: {
+      emailFound: { type: Boolean, default: false },
+      phoneFound: { type: Boolean, default: false },
+      linkedInFound: { type: Boolean, default: false },
+      locationFound: { type: Boolean, default: false }
+    },
+    detectedCareerLevel: {
+      type: String,
+      default: 'Experienced'
+    },
+    extractionMetadata: {
+      method: { type: String, default: 'selectable-text' },
+      numPages: { type: Number, default: 1 },
+      isScanned: { type: Boolean, default: false },
+      ocrConfidence: { type: Number, default: null }
+    },
     isDemo: {
       type: Boolean,
       default: false
@@ -72,6 +86,10 @@ const AnalysisSchema = new mongoose.Schema(
     hasJobDescription: {
       type: Boolean,
       default: false
+    },
+    disclaimer: {
+      type: String,
+      default: 'ATS scores are algorithmic estimates based on industry best practices, not guarantees of employment or official employer ATS results.'
     }
   },
   {

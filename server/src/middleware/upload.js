@@ -1,31 +1,36 @@
 const multer = require('multer');
 
-// Store file in memory buffer for immediate processing and security
+// Store file in memory buffer for immediate processing and security (no permanent disk storage)
 const storage = multer.memoryStorage();
+
+const maxFileSizeMB = parseInt(process.env.MAX_UPLOAD_SIZE_MB || '10', 10);
 
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = [
     'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/msword',
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
     'text/plain'
   ];
 
-  const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt'];
+  const allowedExtensions = ['.pdf', '.docx', '.doc', '.png', '.jpg', '.jpeg', '.txt'];
   const ext = (file.originalname || '').toLowerCase();
   const hasValidExt = allowedExtensions.some(e => ext.endsWith(e));
 
   if (allowedMimeTypes.includes(file.mimetype) || hasValidExt) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid document format. Only PDF, DOCX, and TXT files are supported.'), false);
+    cb(new Error('Unsupported document format. Please upload a PDF, DOCX, PNG, or JPEG file.'), false);
   }
 };
 
 const upload = multer({
   storage,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
+    fileSize: maxFileSizeMB * 1024 * 1024 // e.g. 10MB
   },
   fileFilter
 });

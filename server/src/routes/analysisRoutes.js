@@ -9,15 +9,16 @@ const {
   improveBulletOrSummary,
   deleteAnalysis
 } = require('../controllers/analysisController');
-const { protect } = require('../middleware/auth');
+const { protect, optionalProtect } = require('../middleware/auth');
 
-router.use(protect);
+// Universal upload & analysis endpoint (supports both authenticated dashboard and landing page preview)
+router.post('/upload', optionalProtect, upload.single('resumeFile'), uploadAndAnalyze);
 
-router.post('/upload', upload.single('resumeFile'), uploadAndAnalyze);
-router.post('/resume/:resumeId', analyzeExistingResume);
-router.get('/', getUserAnalyses);
-router.get('/:id', getAnalysisById);
-router.post('/improve', improveBulletOrSummary);
-router.delete('/:id', deleteAnalysis);
+// Authenticated endpoints
+router.post('/resume/:resumeId', protect, analyzeExistingResume);
+router.get('/', protect, getUserAnalyses);
+router.get('/:id', protect, getAnalysisById);
+router.post('/improve', protect, improveBulletOrSummary);
+router.delete('/:id', protect, deleteAnalysis);
 
 module.exports = router;

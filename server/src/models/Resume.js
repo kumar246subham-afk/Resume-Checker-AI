@@ -75,7 +75,18 @@ const ResumeSchema = new mongoose.Schema(
     },
     templateId: {
       type: String,
-      enum: ['ats-classic', 'modern-pro', 'minimal-elegant', 'tech-resume', 'executive-profile'],
+      enum: [
+        'ats-classic',
+        'modern-pro',
+        'minimal-elegant',
+        'tech-resume',
+        'executive-profile',
+        'executive-elite',
+        'tech-innovator',
+        'data-science-pro',
+        'creative-portfolio',
+        'fresh-graduate-pro'
+      ],
       default: 'ats-classic'
     },
     jobTarget: {

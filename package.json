@@ -1,12 +1,14 @@
 {
   "name": "resume-checker-ai",
   "version": "1.0.0",
-  "description": "Resume Checker AI - Complete Professional AI Website",
+  "description": "Resume Checker AI - Enterprise-Grade AI Resume & Career Studio",
   "scripts": {
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build": "npm --prefix client run build",
     "build:client": "npm --prefix client run build",
+    "test": "npm --prefix server test",
     "test:server": "npm --prefix server test",
     "start": "node server/src/server.js"
   },
