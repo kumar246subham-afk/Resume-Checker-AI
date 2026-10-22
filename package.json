@@ -10,6 +10,7 @@
     "build:client": "npm --prefix client run build",
     "test": "npm --prefix server test",
     "test:server": "npm --prefix server test",
+    "test:db": "npm --prefix server run test:db",
     "start": "node server/src/server.js"
   },
   "devDependencies": {

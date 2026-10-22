@@ -82,42 +82,57 @@ This guide provides end-to-end instructions for deploying **Resume Checker AI** 
    ```bash
    cd "c:\Users\ADMIN\OneDrive\Desktop\Resume checker"
    ```
-2. Verify that your `.env` files are not tracked by Git:
+2. Verify that your `.env` files and local secrets are excluded from Git:
    ```bash
    git status
    ```
-3. Stage and commit the deployment changes:
+3. Stage and commit only verified deployment changes:
    ```bash
    git add .
-   git commit -m "feat: complete production deployment configuration for Vercel and Render"
+   git commit -m "feat: complete production deployment configuration"
    ```
-4. Create a new repository on [GitHub](https://github.com/new) (e.g. `resume-checker-ai`). Do not initialize with README or license.
-5. Link your local repository and push:
+4. Push to your GitHub repository:
    ```bash
-   git remote add origin https://github.com/<YOUR_GITHUB_USERNAME>/resume-checker-ai.git
-   git branch -M main
-   git push -u origin main
+   git push origin main
    ```
 
 ---
 
 ### Step 2: Set Up Free MongoDB Atlas Cluster
 
+> [!IMPORTANT]
+> **Database Isolation Notice**:
+> Do NOT touch, overwrite, or modify any existing ConvertX database, collections, or project credentials. Resume Checker AI uses its own dedicated database named `resume_checker_ai`.
+
 1. Sign in to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
-2. Click **Create** -> Select the **M0 Free** shared tier.
-3. Choose your preferred cloud provider (AWS or Google Cloud) and the region closest to your users.
-4. Set up database credentials under **Security**:
-   - Choose **Username and Password**. Create a dedicated database user (e.g., `resume_admin`) with a secure password.
-5. Configure **Network Access**:
+2. If you already have a free cluster in your current project, click the Project dropdown at the top-left and click **New Project** (Atlas allows one Free M0 cluster per project).
+3. Click **Create Database** -> Select the **M0 Free** shared cluster tier.
+4. Configure cluster options:
+   - **Cluster Name**: `ResumeChecker`
+   - **Cloud Provider**: AWS
+   - **Region**: `ap-south-1` (Mumbai) or the region closest to your target users.
+   - *Ensure no paid add-ons or auto-scaling upgrades are checked*.
+5. Set up dedicated database credentials under **Security** -> **Quickstart**:
+   - Choose **Username and Password**. Create a dedicated user (e.g., `resume_checker_admin`) with a strong password.
+   - *Do not use your Atlas account login credentials*.
+6. Configure **Network Access**:
    - Click **Add IP Address** -> Select **Allow Access from Anywhere** (`0.0.0.0/0`).
-   - *Note*: Render free web services utilize shared, dynamic outbound IP ranges. Securing the database relies on your database user's strong password.
-6. Retrieve your Connection String:
-   - Click **Connect** on your cluster -> Choose **Drivers** (Node.js).
-   - Copy the URI format:
+   - *Why 0.0.0.0/0 is needed*: Free-tier hosting providers like Render spin up containers with dynamic, changing outbound IP addresses. Securing your database relies on your database user's strong password and encrypted TLS transport.
+7. Retrieve your official Connection String:
+   - Click **Connect** on your cluster -> Choose **Drivers** -> Select **Node.js** (version 5.5 or later).
+   - Copy the URI template:
      ```
-     mongodb+srv://resume_admin:<password>@cluster0.abcde.mongodb.net/resume_checker_ai?retryWrites=true&w=majority
+     mongodb+srv://<DATABASE_USER>:<PASSWORD>@resumechecker.abcde.mongodb.net/resume_checker_ai?retryWrites=true&w=majority
      ```
-   - Replace `<password>` with your actual password and ensure `/resume_checker_ai` is specified as the database name.
+   - Replace `<DATABASE_USER>` and `<PASSWORD>` (URL-encode special characters if necessary, e.g., `@` becomes `%40`).
+   - Ensure the database name `/resume_checker_ai` is specified before the `?` query string.
+8. Local Verification (Optional):
+   - In your local `server/.env`, set `MONGODB_URI=<your-atlas-uri>`.
+   - Run the automated connectivity test:
+     ```bash
+     npm run test:db
+     ```
+   - Confirm it reports: `[Verify Atlas] All connectivity and permission checks passed successfully!`.
 
 ---
 

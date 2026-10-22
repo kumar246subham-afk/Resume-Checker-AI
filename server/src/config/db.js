@@ -5,17 +5,33 @@ const mongoose = require('mongoose');
  * reconnect handlers, and graceful error handling.
  */
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/resume_checker_ai';
+  // Prevent duplicate connections during development reloads
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
 
-  // Sanitize URI for safe logging (mask password)
-  const safeUri = uri.replace(/:\/\/(.*?):(.*?)@/, '://$1:****@');
+  const isProduction = process.env.NODE_ENV === 'production';
+  let uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    if (isProduction) {
+      const prodErr = new Error('MONGODB_URI environment variable is missing in production. Application startup aborted.');
+      console.error(`[Database Fatal] ${prodErr.message}`);
+      throw prodErr;
+    }
+    uri = 'mongodb://127.0.0.1:27017/resume_checker_ai';
+  }
+
+  // Sanitize URI for safe logging (mask username and password)
+  const safeUri = uri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
 
   const options = {
+    dbName: 'resume_checker_ai', // Explicitly target application database in Atlas
     maxPoolSize: 10,
     minPoolSize: 2,
     serverSelectionTimeoutMS: 8000,
     socketTimeoutMS: 45000,
-    autoIndex: process.env.NODE_ENV !== 'production' // Avoid build index overhead in production
+    autoIndex: !isProduction // Avoid automatic index building overhead in production
   };
 
   try {
@@ -24,11 +40,7 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     console.error(`[Database Error] Failed to connect to MongoDB (${safeUri}): ${error.message}`);
-    if (process.env.NODE_ENV === 'production') {
-      console.warn('[Database Warning] Running in production without a verified database connection. Check MONGODB_URI in Render dashboard.');
-    }
-    // In test environment, throw so tests can assert or handle
-    if (process.env.NODE_ENV === 'test') {
+    if (isProduction || process.env.NODE_ENV === 'test') {
       throw error;
     }
   }

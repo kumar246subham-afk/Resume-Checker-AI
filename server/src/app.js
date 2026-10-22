@@ -118,6 +118,9 @@ const uploadLimiter = rateLimit({
 
 // Health check handler (mount at both /api/health and /health for Render)
 const healthCheckHandler = (req, res) => {
+  const isDbConnected = mongoose.connection.readyState === 1;
+  const isDbConnecting = mongoose.connection.readyState === 2;
+
   const dbStates = {
     0: 'disconnected',
     1: 'connected',
@@ -126,9 +129,11 @@ const healthCheckHandler = (req, res) => {
   };
 
   const dbState = dbStates[mongoose.connection.readyState] || 'unknown';
+  const overallStatus = isDbConnected ? 'healthy' : (isDbConnecting ? 'initializing' : 'unhealthy');
+  const httpCode = isDbConnected || isDbConnecting ? 200 : 503;
 
-  res.status(200).json({
-    status: 'healthy',
+  res.status(httpCode).json({
+    status: overallStatus,
     uptime: Math.round(process.uptime()),
     timestamp: new Date().toISOString(),
     service: 'Resume Checker AI API',
