@@ -23,7 +23,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 45000 // 45s timeout for AI analysis and OCR document processing
+  timeout: 60000 // 60s timeout for cloud OCR document processing and AI evaluations
 });
 
 // Interceptor to attach JWT token to all requests

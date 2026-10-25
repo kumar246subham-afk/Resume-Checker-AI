@@ -1,10 +1,18 @@
-const { createWorker } = require('tesseract.js');
+const { createWorker, PSM } = require('tesseract.js');
 
 /**
  * Universal OCR Service using Tesseract.js (WebAssembly / pure JS engine)
- * Compatible with Node.js, Linux, Windows, Docker, and serverless environments.
+ * Optimized for low-resource cloud environments (Render Free Tier):
+ * - Worker caching / warm-up to eliminate 10-15s cold worker spin-up penalty
+ * - Parameter tuning to bypass unnecessary HOCR/TSV/box generation
+ * - 45s safety timeout with clean worker termination on abort
+ * - 5-minute idle auto-shutdown to conserve container memory
  */
 class OCRService {
+  static _workerInstance = null;
+  static _workerBusy = false;
+  static _idleTimer = null;
+
   /**
    * Check if OCR engine is available in current runtime
    */
@@ -17,9 +25,70 @@ class OCRService {
   }
 
   /**
+   * Get or initialize a warm worker
+   */
+  static async _getWorker() {
+    // Clear idle shutdown timer if pending
+    if (this._idleTimer) {
+      clearTimeout(this._idleTimer);
+      this._idleTimer = null;
+    }
+
+    if (!this._workerInstance) {
+      console.log('[OCR Service] Initializing warm Tesseract worker...');
+      const worker = await createWorker('eng');
+      await worker.setParameters({
+        tessedit_pageseg_mode: PSM.AUTO,
+        tessjs_create_hocr: '0',
+        tessjs_create_tsv: '0',
+        tessjs_create_box: '0',
+        tessjs_create_unlv: '0',
+        tessjs_create_osd: '0'
+      });
+      this._workerInstance = worker;
+      console.log('[OCR Service] Warm Tesseract worker ready.');
+    }
+
+    return this._workerInstance;
+  }
+
+  /**
+   * Schedule worker termination after 5 minutes of inactivity to release memory
+   */
+  static _scheduleIdleShutdown() {
+    if (this._idleTimer) {
+      clearTimeout(this._idleTimer);
+    }
+    this._idleTimer = setTimeout(async () => {
+      await this.terminateWorker();
+    }, 5 * 60 * 1000);
+
+    if (this._idleTimer.unref) {
+      this._idleTimer.unref();
+    }
+  }
+
+  /**
+   * Force termination of current worker (e.g. after timeout or shutdown)
+   */
+  static async terminateWorker() {
+    if (this._workerInstance) {
+      try {
+        console.log('[OCR Service] Terminating worker to free container memory...');
+        await this._workerInstance.terminate();
+      } catch (err) {
+        // Silently handle termination error
+      } finally {
+        this._workerInstance = null;
+        this._workerBusy = false;
+      }
+    }
+  }
+
+  /**
    * Run OCR on a single image buffer (PNG, JPEG, BMP, WebP)
    * @param {Buffer} imageBuffer - Buffer of the image
-   * @param {object} options - Options including timeoutMs (default 25000ms)
+   * @param {object} options - Options including timeoutMs (default 45000ms)
    * @returns {Promise<{ text: string, confidence: number }>}
    */
   static async recognizeImage(imageBuffer, options = {}) {
@@ -27,32 +96,70 @@ class OCRService {
       return { text: '', confidence: 0 };
     }
 
-    const timeoutMs = options.timeoutMs || 25000;
-    let worker = null;
+    const timeoutMs = options.timeoutMs || 45000;
+    let workerToUse = null;
+    let isDedicatedWorker = false;
 
-    const ocrPromise = (async () => {
-      try {
-        worker = await createWorker('eng');
-        const ret = await worker.recognize(imageBuffer);
+    // If active worker is busy with another concurrent request, spin up an ephemeral one
+    if (this._workerBusy || !this._workerInstance) {
+      if (this._workerBusy) {
+        console.log('[OCR Service] Primary worker busy, creating ephemeral worker...');
+        isDedicatedWorker = true;
+        workerToUse = await createWorker('eng');
+        await workerToUse.setParameters({
+          tessedit_pageseg_mode: PSM.AUTO,
+          tessjs_create_hocr: '0',
+          tessjs_create_tsv: '0',
+          tessjs_create_box: '0',
+          tessjs_create_unlv: '0',
+          tessjs_create_osd: '0'
+        });
+      } else {
+        workerToUse = await this._getWorker();
+        this._workerBusy = true;
+      }
+    } else {
+      workerToUse = this._workerInstance;
+      this._workerBusy = true;
+    }
+
+    let timeoutId = null;
+
+    try {
+      const ocrPromise = (async () => {
+        const ret = await workerToUse.recognize(imageBuffer);
         const text = (ret?.data?.text || '').trim();
         const confidence = ret?.data?.confidence || 0;
         return { text, confidence };
-      } finally {
-        if (worker) {
-          try {
-            await worker.terminate();
-          } catch (err) {
-            // Ignore worker termination cleanup errors
-          }
-        }
+      })();
+
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(`OCR processing timed out after ${timeoutMs / 1000} seconds. Please upload a PDF or a compressed image under 2MB for faster analysis.`));
+        }, timeoutMs);
+      });
+
+      const result = await Promise.race([ocrPromise, timeoutPromise]);
+      return result;
+    } catch (err) {
+      // If error or timeout occurred, destroy the worker so corrupted WASM state is not reused
+      if (isDedicatedWorker) {
+        try { await workerToUse.terminate(); } catch (_) {}
+      } else {
+        await this.terminateWorker();
       }
-    })();
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`OCR processing timed out after ${timeoutMs / 1000} seconds.`)), timeoutMs)
-    );
-
-    return Promise.race([ocrPromise, timeoutPromise]);
+      throw err;
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (isDedicatedWorker) {
+        try { await workerToUse.terminate(); } catch (_) {}
+      } else {
+        this._workerBusy = false;
+        this._scheduleIdleShutdown();
+      }
+    }
   }
 
   /**
@@ -75,7 +182,7 @@ class OCRService {
 
     for (let i = 0; i < pagesToProcess.length; i++) {
       try {
-        const result = await this.recognizeImage(pagesToProcess[i], { timeoutMs: 20000 });
+        const result = await this.recognizeImage(pagesToProcess[i], { timeoutMs: 30000 });
         if (result.text && result.text.length > 0) {
           pageResults.push(result.text);
           totalConfidence += result.confidence;

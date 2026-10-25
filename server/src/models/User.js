@@ -83,14 +83,13 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-// Hash password before save
-UserSchema.pre('save', async function (next) {
+// Hash password before save (modern async Mongoose hook)
+UserSchema.pre('save', async function () {
   if (!this.isModified('password')) {
-    return next();
+    return;
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // Compare password

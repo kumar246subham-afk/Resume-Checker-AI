@@ -248,6 +248,14 @@ describe('Universal Document Parser & Extraction Pipeline Tests', () => {
       expect(cleaned).not.toContain('   ');
       expect(cleaned).not.toContain('|  |  |');
     });
+
+    test('OCRService gracefully handles custom timeout without crashing', async () => {
+      const tinyBuffer = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
+      // Pass ultra-short 1ms timeout to verify safe timeout handling
+      await expect(OCRService.recognizeImage(tinyBuffer, { timeoutMs: 1 }))
+        .rejects
+        .toThrow(/OCR processing timed out/);
+    });
   });
 
   describe('7. Universal Upload API Endpoint Integration (Guest & Authenticated)', () => {

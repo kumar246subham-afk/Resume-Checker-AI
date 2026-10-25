@@ -18,13 +18,14 @@ export const LoginPage = () => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!email || !password) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
       setErrorMsg('Please enter both your email address and password');
       return;
     }
 
     setLoading(true);
-    const result = await login(email, password);
+    const result = await login(cleanEmail, password);
     setLoading(false);
 
     if (result.success) {

@@ -36,7 +36,10 @@ export const SignupPage = () => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!name || !email || !password) {
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+
+    if (!cleanName || !cleanEmail || !password) {
       setErrorMsg('Please complete all required fields');
       return;
     }
@@ -57,7 +60,7 @@ export const SignupPage = () => {
     }
 
     setLoading(true);
-    const result = await signup(name, email, password);
+    const result = await signup(cleanName, cleanEmail, password);
     setLoading(false);
 
     if (result.success) {

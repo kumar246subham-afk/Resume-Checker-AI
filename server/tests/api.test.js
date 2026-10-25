@@ -50,6 +50,20 @@ describe('Authentication & Resume API End-to-End Tests', () => {
     expect(res.body.token).toBeDefined();
   });
 
+  test('POST /api/auth/login - Handles whitespace-padded and uppercase email seamlessly', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: `  ${testEmail.toUpperCase()}  `,
+        password: 'Password123!'
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.token).toBeDefined();
+    expect(res.body.user.email).toBe(testEmail.toLowerCase());
+  });
+
   test('POST /api/auth/login - Rejects invalid password', async () => {
     const res = await request(app)
       .post('/api/auth/login')

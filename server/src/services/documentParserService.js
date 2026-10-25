@@ -301,7 +301,7 @@ class DocumentParserService {
 
     console.log(`[DocumentParser] Running OCR on uploaded ${format.toUpperCase()} image resume...`);
 
-    const result = await OCRService.recognizeImage(buffer, { timeoutMs: 30000 });
+    const result = await OCRService.recognizeImage(buffer, { timeoutMs: 45000 });
     const cleanedText = this.normalizeExtractedText(OCRService.cleanOcrText(result.text));
     const alphaCount = (cleanedText.match(/[a-zA-Z0-9]/g) || []).length;
 

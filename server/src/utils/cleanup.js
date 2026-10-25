@@ -13,7 +13,7 @@ class CleanupService {
    * @param {string[]} allowedExtensions - File extensions eligible for cleanup
    * @param {number} maxAgeMs - Maximum allowed age in milliseconds (default: 1 hour)
    */
-  static cleanOldTempFiles(dirPath, allowedExtensions = ['.tmp', '.traineddata'], maxAgeMs = 3600000) {
+  static cleanOldTempFiles(dirPath, allowedExtensions = ['.tmp'], maxAgeMs = 3600000) {
     if (!fs.existsSync(dirPath)) return;
 
     try {
@@ -22,7 +22,7 @@ class CleanupService {
 
       for (const file of files) {
         const ext = path.extname(file).toLowerCase();
-        // Strict guard: ONLY touch files matching allowed temporary extensions
+        // Strict guard: ONLY touch files matching allowed temporary extensions (.tmp only, preserve .traineddata language pack)
         if (!allowedExtensions.includes(ext)) {
           continue;
         }
@@ -49,11 +49,11 @@ class CleanupService {
   static initScheduledCleanup() {
     // Run an initial sweep on startup
     const serverDir = path.resolve(__dirname, '../../');
-    this.cleanOldTempFiles(serverDir, ['.traineddata', '.tmp'], 7200000); // older than 2 hours
+    this.cleanOldTempFiles(serverDir, ['.tmp'], 7200000); // older than 2 hours
 
     // Interval sweep every 2 hours
     const interval = setInterval(() => {
-      this.cleanOldTempFiles(serverDir, ['.traineddata', '.tmp'], 7200000);
+      this.cleanOldTempFiles(serverDir, ['.tmp'], 7200000);
       this.cleanOldTempFiles(os.tmpdir(), ['resume_ai_'], 3600000);
     }, 2 * 60 * 60 * 1000);
 

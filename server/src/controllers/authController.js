@@ -38,8 +38,11 @@ exports.signup = async (req, res, next) => {
       });
     }
 
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanName = String(name).trim();
+
     // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await User.findOne({ email: cleanEmail });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -48,8 +51,8 @@ exports.signup = async (req, res, next) => {
     }
 
     const user = await User.create({
-      name,
-      email: email.toLowerCase(),
+      name: cleanName,
+      email: cleanEmail,
       password
     });
 
@@ -72,8 +75,10 @@ exports.login = async (req, res, next) => {
       });
     }
 
+    const cleanEmail = String(email).trim().toLowerCase();
+
     // Find user with password
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const user = await User.findOne({ email: cleanEmail }).select('+password');
 
     if (!user) {
       return res.status(401).json({
@@ -130,7 +135,8 @@ exports.forgotPassword = async (req, res, next) => {
       });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const cleanEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: cleanEmail });
     if (!user) {
       // Security: Do not reveal if email exists or not
       return res.status(200).json({
